@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POTS Staking UI</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --bg-color: #0c0e0d;
+            --modal-bg-1: #161817;
+            --modal-bg-2: #1e2e21;
+            --primary-green: #4ade80;
+            --primary-green-glow: rgba(74, 222, 128, 0.35);
+            --text-main: #ffffff;
+            --text-muted: #8e9590;
+            --border-color: #262927;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 50% 30%, rgba(33, 58, 38, 0.4) 0%, transparent 70%);
+        }
+
+        /* Контейнер модалок */
+        .modal-container {
+            position: relative;
+            width: 100%;
+            max-width: 380px;
+            min-height: 560px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal {
+            position: absolute;
+            width: 100%;
+            border-radius: 28px;
+            padding: 28px 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* --- Окно 1: Staking Preview --- */
+        #staking-form {
+            background-color: var(--modal-bg-1);
+            border: 1px solid var(--border-color);
+            z-index: 10;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .header-title {
+            font-weight: 700;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+        }
+
+        .badge {
+            background: rgba(74, 222, 128, 0.15);
+            color: var(--primary-green);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-left: 8px;
+            border: 1px solid rgba(74, 222, 128, 0.3);
+        }
+
+        .close-btn {
+            background: #222523;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .logo-center {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        
+        .logo-circle {
+            width: 68px;
+            height: 68px;
+            border: 3px solid var(--primary-green);
+            border-radius: 50%;
+            display: inline-flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-weight: 800;
+            font-size: 19px;
+            letter-spacing: 0.5px;
+            color: var(--primary-green);
+            box-shadow: 0 0 24px var(--primary-green-glow);
+            background: radial-gradient(circle, rgba(74, 222, 128, 0.15) 0%, transparent 80%);
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 12px 14px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .stat-box {
+            text-align: left;
+        }
+        .stat-box:last-child {
+            text-align: right;
+        }
+
+        .stat-title {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .input-group {
+            margin-bottom: 22px;
+        }
+
+        .input-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .input-title span { color: #f87171; }
+
+        .input-wrapper {
+            background: #101211;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            transition: border-color 0.2s;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: var(--primary-green);
+        }
+
+        .input-wrapper input {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 17px;
+            font-weight: 600;
+            outline: none;
+            width: 100%;
+        }
+
+        .btn-max {
+            color: var(--primary-green);
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            user-select: none;
+        }
+        .btn-max:hover {
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        .balance {
+            font-size: 12px;
+            color: var(--text-muted);
+            padding-left: 2px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-green);
+            color: #0c180e;
+            border: none;
+            border-radius: 14px;
+            width: 100%;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.2s, background-color 0.2s;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 20px rgba(74, 222, 128, 0.25);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 10px 25px rgba(74, 222, 128, 0.4);
+        }
+
+        .info-rules {
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+        .info-rules strong {
+            color: #d1d5db;
+        }
+
+        /* --- Окно 2: Success Modal --- */
+        #success-form {
+            background-color: var(--modal-bg-2);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+            padding: 38px 26px;
+            text-align: center;
+            opacity: 0;
+            transform: scale(0.85) translateY(20px);
+            pointer-events: none;
+            z-index: 5;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 40px rgba(74, 222, 128, 0.15);
+            overflow: hidden;
+        }
+
+        .success-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        #particles-container {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            bottom: -10px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            opacity: 0;
+            box-shadow: 0 0 8px var(--primary-green);
+        }
+
+        .success-title {
+            font-size: 17px;
+            font-weight: 800;
+            line-height: 1.45;
+            margin-bottom: 35px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .success-title span {
+            color: var(--primary-green);
+        }
+
+        /* --- ЦЕНТРАЛЬНЫЙ ЛОГОТИП POTS (ЧИСТЫЙ SVG, БЕЗ КАРТИНОК) --- */
+        .success-logo-container {
+            position: relative;
+            width: 86px;
+            height: 86px;
+            margin: 0 auto 35px auto;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle, #1a291d 0%, #101211 100%);
+            border: 3px solid var(--primary-green);
+            box-shadow: 0 0 30px var(--primary-green-glow);
+            animation: glowPulse 2s infinite alternate, pop3D 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.3s forwards;
+            opacity: 0;
+            transform: scale(0.5) rotate(-15deg);
+        }
+
+        .pots-logo-main {
+            width: 48px;
+            height: 48px;
+            z-index: 2;
+            filter: drop-shadow(0 0 8px rgba(74, 222, 128, 0.6));
+        }
+
+        .pots-part-left {
+            opacity: 0;
+            transform: translateY(-20px) scale(0.8);
+            transform-origin: center;
+        }
+
+        .pots-part-right {
+            opacity: 0;
+            transform: translateY(20px) scale(0.8);
+            transform-origin: center;
+        }
+
+        @keyframes assembleLeft {
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes assembleRight {
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes pop3D {
+            to { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+
+        @keyframes glowPulse {
+            0% { box-shadow: 0 0 20px rgba(74, 222, 128, 0.2); }
+            100% { box-shadow: 0 0 45px rgba(74, 222, 128, 0.6); }
+        }
+
+        .check-badge {
+            position: absolute;
+            bottom: -5px;
+            right: -5px;
+            width: 32px;
+            height: 32px;
+            background: var(--primary-green);
+            border: 3px solid var(--modal-bg-2);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 3;
+            transform: scale(0);
+            animation: badgePop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.8s forwards;
+        }
+
+        @keyframes badgePop {
+            to { transform: scale(1); }
+        }
+
+        .animate-check-small {
+            stroke-dasharray: 50;
+            stroke-dashoffset: 50;
+        }
+
+        /* --- ФОНОВЫЙ ВОДЯНОЙ ЗНАК POTS --- */
+        .bg-watermark {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 220px;
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 1;
+            /* Плавное вращение на фоне */
+            animation: slowSpin 25s linear infinite;
+        }
+
+        @keyframes slowSpin {
+            from { transform: translateX(-50%) rotate(0deg); }
+            to { transform: translateX(-50%) rotate(360deg); }
+        }
+
+        /* --- СПИСОК И ТЕКСТ --- */
+        .success-list {
+            list-style: none;
+            text-align: left;
+            margin-bottom: 40px;
+        }
+
+        .success-list li {
+            display: flex;
+            align-items: flex-start;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 18px;
+            opacity: 0;
+            transform: translateX(-20px);
+            line-height: 1.4;
+            color: #d1dad2;
+        }
+
+        .success-list li svg {
+            margin-right: 12px;
+            min-width: 18px;
+            margin-top: 1px;
+            filter: drop-shadow(0 0 5px rgba(74, 222, 128, 0.4));
+        }
+
+        .success-list li span {
+            color: var(--primary-green);
+            margin-left: 4px;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(74, 222, 128, 0.2);
+        }
+
+        .footer-text {
+            color: #728975;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            animation: pulseText 2s infinite 1s;
+        }
+
+        @keyframes pulseText {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; text-shadow: 0 0 8px rgba(114, 137, 117, 0.5); }
+        }
+
+        /* --- КНОПКА (ОБНОВЛЕНА НА АНГЛ) --- */
+        .btn-restart {
+            margin-top: 25px;
+            background: transparent;
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            color: var(--primary-green);
+            border-radius: 10px;
+            padding: 10px 24px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            z-index: 10;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-restart:hover {
+            background: rgba(74, 222, 128, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 222, 128, 0.1);
+        }
+
+        /* --- ОБЩИЕ АНИМАЦИИ --- */
+        .fade-out {
+            opacity: 0;
+            transform: scale(0.9) translateY(-25px) !important;
+            pointer-events: none;
+        }
+
+        .pop-in {
+            opacity: 1 !important;
+            transform: scale(1) translateY(0) !important;
+            pointer-events: auto !important;
+            animation: bounceIn 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes bounceIn {
+            0% { opacity: 0; transform: scale(0.8) translateY(30px) rotateX(10deg); }
+            60% { opacity: 1; transform: scale(1.02) translateY(-5px) rotateX(0); }
+            100% { opacity: 1; transform: scale(1) translateY(0) rotateX(0); }
+        }
+
+        .slide-in-right {
+            animation: slideInRight 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        @keyframes slideInRight {
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .delay-1 { animation-delay: 0.6s; }
+        .delay-2 { animation-delay: 0.8s; }
+        .delay-3 { animation-delay: 1.0s; }
+
+        .loading {
+            position: relative;
+            color: transparent !important;
+        }
+        .loading::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 22px;
+            height: 22px;
+            margin-left: -11px;
+            margin-top: -11px;
+            border: 3px solid rgba(0,0,0,0.2);
+            border-top-color: #0c180e;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="modal-container">
+        <!-- МОДАЛЬНОЕ ОКНО 1: ОТКРЫТИЕ СТЕЙКИНГА -->
+        <div id="staking-form" class="modal">
+            <div class="header">
+                <div class="header-title">
+                    IBS <span class="badge">360</span>
+                </div>
+                <button class="close-btn">✕</button>
+            </div>
+
+            <div class="logo-center">
+                <div class="logo-circle">IBS</div>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-box">
+                    <div class="stat-title">Estimated APY</div>
+                    <div class="stat-value">1,233.88%</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-title">Vesting Period</div>
+                    <div class="stat-value">360 day(s)</div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <div class="input-title">Amount (IBS) <span>*</span></div>
+                <div class="input-wrapper">
+                    <input type="number" id="amount-input" placeholder="0" value="99">
+                    <div class="btn-max" id="btn-max">Max</div>
+                </div>
+                <div class="balance">Balance: 150.0000 IBS</div>
+            </div>
+
+            <button class="btn-primary" id="preview-btn">Preview</button>
+
+            <div class="info-rules">
+                <strong>Attention:</strong><br>
+                1. First-time staking requires signature authorization.<br>
+                2. Transaction execute automatically for IBS staking.<br>
+                3. Reward distributed every 8 hours and can be claimed anytime.
+            </div>
+        </div>
+
+        <!-- МОДАЛЬНОЕ ОКНО 2: УСПЕШНАЯ АНИМАЦИЯ -->
+        <div id="success-form" class="modal">
+            
+            <div id="particles-container"></div>
+
+            <!-- ИДЕАЛЬНЫЙ ФОНОВЫЙ ЛОГОТИП POTS (WATERMARK) -->
+            <svg class="bg-watermark" viewBox="0 0 120 120">
+                <path fill="var(--primary-green)" d="M 35,45 L 50,30 L 50,80 L 35,95 Z" />
+                <path fill="var(--primary-green)" d="M 55,30 L 75,30 L 90,45 L 90,65 L 75,80 L 55,80 L 55,65 L 70,65 L 75,60 L 75,50 L 70,45 L 55,45 Z" />
+            </svg>
+
+            <div class="success-content">
+                <div class="success-title">
+                    YOU HAVE SUCCESSFULLY<br>OPENED STAKING ON <span id="display-amount">99</span> <span style="color:var(--primary-green);">IBS 360 DAYS.</span>
+                </div>
+
+                <!-- ЦЕНТРАЛЬНЫЙ АНИМИРОВАННЫЙ ЛОГОТИП POTS -->
+                <div class="success-logo-container" id="animated-logo">
+                    
+                    <svg class="pots-logo-main" viewBox="0 0 120 120">
+                        <path class="pots-part-left" fill="var(--primary-green)" d="M 35,45 L 50,30 L 50,80 L 35,95 Z" />
+                        <path class="pots-part-right" fill="var(--primary-green)" d="M 55,30 L 75,30 L 90,45 L 90,65 L 75,80 L 55,80 L 55,65 L 70,65 L 75,60 L 75,50 L 70,45 L 55,45 Z" />
+                    </svg>
+                    
+                    <div class="check-badge">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline class="animate-check-small" points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                    </div>
+                </div>
+
+                <ul class="success-list">
+                    <li id="item-1" class="slide-in-right delay-1">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--primary-green)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                        <div>CURRENT IBS PRICE: <span>$10.84</span></div>
+                    </li>
+                    <li id="item-2" class="slide-in-right delay-2">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--primary-green)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                        <div>YOUR AVERAGE PURCHASE PRICE FOR IBS: <span>$0.84</span></div>
+                    </li>
+                    <li id="item-3" class="slide-in-right delay-3">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--primary-green)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                        <div>FUTURE IBS COUNT: <span>1057 IBS</span></div>
+                    </li>
+                </ul>
+
+                <div class="footer-text">POTS IS THE FUTURE</div>
+                
+                <div>
+                    <!-- КНОПКА ИЗМЕНЕНА НА АНГЛИЙСКИЙ -->
+                    <button class="btn-restart" id="btn-restart">Stake Again</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const btn = document.getElementById('preview-btn');
+        const formModal = document.getElementById('staking-form');
+        const successModal = document.getElementById('success-form');
+        const amountInput = document.getElementById('amount-input');
+        const displayAmount = document.getElementById('display-amount');
+        const maxBtn = document.getElementById('btn-max');
+        const restartBtn = document.getElementById('btn-restart');
+        const particlesContainer = document.getElementById('particles-container');
+
+        maxBtn.addEventListener('click', () => {
+            amountInput.value = 150;
+        });
+
+        function triggerParticles() {
+            particlesContainer.innerHTML = '';
+            for (let i = 0; i < 25; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                particle.style.left = (Math.random() * 100) + '%';
+                particle.style.animationDelay = (Math.random() * 0.5) + 's';
+                particle.style.backgroundColor = Math.random() > 0.4 ? 'var(--primary-green)' : '#ffffff';
+                
+                const duration = 1.5 + Math.random() * 1.5;
+                
+                particle.animate([
+                    { transform: 'translateY(0) scale(1)', opacity: 1 },
+                    { transform: `translateY(-${300 + Math.random() * 200}px) translateX(${Math.random() * 100 - 50}px) scale(0)`, opacity: 0 }
+                ], {
+                    duration: duration * 1000,
+                    easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                    delay: Math.random() * 500,
+                    fill: 'forwards'
+                });
+
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        btn.addEventListener('click', () => {
+            const amount = amountInput.value || 99;
+            displayAmount.innerText = amount;
+
+            btn.classList.add('loading');
+
+            setTimeout(() => {
+                formModal.classList.add('fade-out');
+                
+                setTimeout(() => {
+                    successModal.classList.add('pop-in');
+                    
+                    triggerParticles();
+
+                    // Анимация контейнера логотипа
+                    const logoContainer = document.getElementById('animated-logo');
+                    logoContainer.style.animation = 'none';
+                    logoContainer.offsetHeight;
+                    logoContainer.style.animation = 'glowPulse 2s infinite alternate, pop3D 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.3s forwards';
+                    
+                    // Анимация двух частей буквы 'P'
+                    const partLeft = document.querySelector('.pots-part-left');
+                    const partRight = document.querySelector('.pots-part-right');
+                    
+                    partLeft.style.animation = 'none';
+                    partRight.style.animation = 'none';
+                    partLeft.offsetHeight; // trigger reflow
+                    
+                    partLeft.style.animation = 'assembleLeft 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.3s forwards';
+                    partRight.style.animation = 'assembleRight 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.4s forwards';
+
+                    // Анимация галочки
+                    const check = document.querySelector('.animate-check-small');
+                    check.style.transition = 'none';
+                    check.style.strokeDashoffset = '50';
+                    setTimeout(() => {
+                        check.style.transition = 'stroke-dashoffset 0.4s ease-out';
+                        check.style.strokeDashoffset = '0';
+                    }, 1000);
+
+                    // Анимация списка
+                    ['item-1', 'item-2', 'item-3'].forEach((id, idx) => {
+                        const el = document.getElementById(id);
+                        el.style.animation = 'none';
+                        el.offsetHeight;
+                        el.style.animation = `slideInRight 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${0.6 + idx * 0.2}s forwards`;
+                    });
+                }, 250);
+                
+            }, 750);
+        });
+
+        restartBtn.addEventListener('click', () => {
+            btn.classList.remove('loading');
+            successModal.classList.remove('pop-in');
+            formModal.classList.remove('fade-out');
+            particlesContainer.innerHTML = '';
+        });
+    </script>
+</body>
+</html>
